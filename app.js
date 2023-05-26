@@ -85,14 +85,18 @@ app.get("/states/", authenticateJwtToken, async (request, response) => {
   response.send(states);
 });
 
-app.get("/states/:stateId/", async (request, response) => {
-  const { stateId } = request.params;
-  const getStateQuery = `
+app.get(
+  "/states/:stateId/",
+  authenticateJwtToken,
+  async (request, response) => {
+    const { stateId } = request.params;
+    const getStateQuery = `
         SELECT * FROM state WHERE state_id = ${stateId};
     `;
-  const state = await db.get(getStateQuery);
-  response.send(state);
-});
+    const state = await db.get(getStateQuery);
+    response.send(state);
+  }
+);
 
 app.post("/districts/", authenticateJwtToken, async (request, response) => {
   const { districtName, stateId, cases, cured, active, deaths } = request.body;
@@ -162,7 +166,13 @@ app.get(
   async (request, response) => {
     const { stateId } = request.params;
     const getStatsQuery = `
-        SELECT * FROM district WHERE state_id = ${stateId};
+        SELECT 
+          cases AS totalCases,
+          cured AS totalCured,
+          active AS totalActive,
+          deaths AS totalDeaths
+         FROM district 
+         WHERE state_id = ${stateId};
     `;
     const stats = await db.get(getStatsQuery);
     response.send(stats);
